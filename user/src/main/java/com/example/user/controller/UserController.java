@@ -3,11 +3,10 @@ package com.example.user.controller;
 import com.example.user.dto.AuthResponse;
 import com.example.user.dto.LoginDTO;
 import com.example.user.dto.LoginResponse;
+import com.example.user.dto.PendingRegisterResponse;
 import com.example.user.dto.UserDTO;
-import com.example.user.model.User;
 import com.example.user.service.UserService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,8 +22,8 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<AuthResponse> signUp(@Valid @RequestBody UserDTO userDTO) {
-        AuthResponse user = userService.signUp(userDTO);
+    public ResponseEntity<PendingRegisterResponse> signUp(@Valid @RequestBody UserDTO userDTO) {
+        PendingRegisterResponse user = userService.signUp(userDTO);
         return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
 

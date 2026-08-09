@@ -15,4 +15,12 @@ public class KafkaTopicConfig {
                 .replicas(1)
                 .build();
     }
+
+    @Bean
+    public NewTopic otpVerificationTopic(){
+        return TopicBuilder.name("otp-verification")
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
 }

@@ -1,4 +1,4 @@
-package com.example.user.dto;
+package com.example.user.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
