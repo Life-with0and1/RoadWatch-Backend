@@ -35,6 +35,27 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
     }
+    @ExceptionHandler(InvalidOtpException.class)
+        public ResponseEntity<Object> handleInvalidOtpException(InvalidOtpException ex) {
+
+             Map<String, Object> error = new HashMap<>();
+            error.put("timestamp", LocalDateTime.now());
+            error.put("status", HttpStatus.BAD_REQUEST.value());
+            error.put("message", ex.getMessage());
+
+            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        }
+
+    @ExceptionHandler(PendingRegistrationNotFoundException.class)
+        public ResponseEntity<Object> handlePendingRegistrationException(PendingRegistrationNotFoundException ex){
+            Map<String, Object> error = new HashMap<>();
+            error.put("timestamp", LocalDateTime.now());
+            error.put("status", HttpStatus.NOT_FOUND.value());
+            error.put("message", ex.getMessage());
+
+            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+
+        }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleValidationException(MethodArgumentNotValidException ex) {
@@ -47,6 +68,8 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
+
+   
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleGenericException(Exception ex) {

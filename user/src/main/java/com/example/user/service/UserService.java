@@ -3,16 +3,21 @@
     import com.example.user.config.JwtService;
     import com.example.user.dto.*;
 import com.example.user.event.OtpVerificationEvent;
+import com.example.user.event.UserRegisterEvent;
 import com.example.user.exception.EmailAlreadyExistsException;
     import com.example.user.exception.InvalidCredentialsException;
-    import com.example.user.model.PendingRegisterUser;
+import com.example.user.exception.InvalidOtpException;
+import com.example.user.exception.PendingRegistrationNotFoundException;
+import com.example.user.model.PendingRegisterUser;
     import com.example.user.model.User;
     import com.example.user.producer.UserEventProducer;
     import com.example.user.repository.PendingRegisterRepository;
     import com.example.user.repository.UserRepository;
     import com.example.user.util.OtpGenerator;
 
-    import org.springframework.data.redis.core.RedisTemplate;
+import jakarta.transaction.Transactional;
+
+import org.springframework.data.redis.core.RedisTemplate;
     import org.springframework.security.crypto.password.PasswordEncoder;
     import org.springframework.stereotype.Service;
 
@@ -74,25 +79,39 @@ import java.time.LocalDateTime;
                 user.getEmail(),
                 "Verification OTP sent"
             );
+        }
 
+        @Transactional
+        public AuthResponse verifyUser(VerificationDTO request){
+            String redisKey = "otp:" + request.getId();
 
+            String redisOtp = redisTemplate.opsForValue().get(redisKey);
 
-            // User savedUser = userRepository.save(user);
+            if(!request.getOtp().equals(redisOtp)){
+                throw new InvalidOtpException("Otp is incorrect. Please try again");
+            }
 
-            // String token = jwtService.generateToken(savedUser.getEmail(), savedUser.getId());
+            Optional<PendingRegisterUser> pendingRegisterUser = pendingRegisterRepository.findById(request.getId());
 
-            // UserRegisterEvent event = new UserRegisterEvent(
-            //         savedUser.getId(),
-            //         savedUser.getEmail(),
-            //         savedUser.getName()
-            // );
-            // userEventProducer.publishUserRegister(event);
-            // return new AuthResponse(
-            //         token,
-            //         savedUser.getId(),
-            //         savedUser.getName(),
-            //         savedUser.getEmail()
-            // );
+            if(!pendingRegisterUser.isPresent()){
+                throw new PendingRegistrationNotFoundException("Please try again creating your account.");
+            }
+
+            User user = new User();
+
+            user.setEmail(pendingRegisterUser.get().getEmail());
+            user.setName(pendingRegisterUser.get().getName());
+            user.setPassword(pendingRegisterUser.get().getPassword());
+            userRepository.save(user);
+            
+            pendingRegisterRepository.deleteAllByEmail(pendingRegisterUser.get().getEmail());
+            redisTemplate.delete(redisKey);
+
+            String token = jwtService.generateToken(user.getEmail(), user.getId());
+
+            UserRegisterEvent event = new UserRegisterEvent(user.getId(),user.getEmail(),user.getName());
+            userEventProducer.publishUserRegister(event);
+            return new AuthResponse(token,user.getId(),user.getName(),user.getEmail());
         }
 
         public LoginResponse login(LoginDTO loginDTO){
