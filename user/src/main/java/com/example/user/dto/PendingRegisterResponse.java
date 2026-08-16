@@ -6,6 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class PendingRegisterResponse {
+    private Long id;
     private String email;
     private String message;
 }

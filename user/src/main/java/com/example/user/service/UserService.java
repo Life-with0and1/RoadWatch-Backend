@@ -76,6 +76,7 @@ import java.time.LocalDateTime;
             userEventProducer.publishOtpSent(event);
             
             return new PendingRegisterResponse(
+                user.getId(),
                 user.getEmail(),
                 "Verification OTP sent"
             );
