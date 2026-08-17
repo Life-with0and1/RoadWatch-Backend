@@ -2,10 +2,13 @@ package com.example.post.controller;
 
 import com.example.post.dto.CreatePostDTO;
 import com.example.post.dto.PostResponseDTO;
+import com.example.post.dto.UpdatePostDTO;
 import com.example.post.model.Post;
 import com.example.post.security.CustomUserPrincipal;
 import com.example.post.service.PostService;
 import jakarta.validation.Valid;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,42 +32,32 @@ public class PostController {
         this.postService = postService;
     }
 
-    // Create Post
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Post> createPost(@AuthenticationPrincipal CustomUserPrincipal user, @Valid @RequestPart("post") CreatePostDTO dto, @RequestPart("media") List<MultipartFile> media) throws IOException {
-        return ResponseEntity.ok(postService.createPost(dto, user.getUserId(), media));
+    public ResponseEntity<PostResponseDTO> createPost(@AuthenticationPrincipal CustomUserPrincipal user, @Valid @RequestPart("post") CreatePostDTO dto, @RequestPart("media") List<MultipartFile> media) throws IOException {
+        return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(dto, user.getUserId(), media));
     }
 
-    //Fetch posts on a basis of distance
     @GetMapping("/nearby")
-    public ResponseEntity<Page<PostResponseDTO>> fetchNearbyPosts(
-            @RequestParam double latitude,
-            @RequestParam double longitude,
-            @RequestParam(defaultValue = "5") double radius,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
-    ) {
-        Pageable pageable = PageRequest.of(
-                page,
-                size,
-                Sort.by(
-                        Sort.Direction.DESC,
-                        "createdAt"
-                )
-        );
+    public ResponseEntity<Page<PostResponseDTO>> fetchNearbyPosts(@RequestParam double latitude,@RequestParam double longitude,@RequestParam(defaultValue = "5") double radius,@RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page,size,Sort.by(Sort.Direction.DESC,"createdAt"));
 
-        return ResponseEntity.ok(
-                postService.fetchNearbyPosts(
-                        latitude,
-                        longitude,
-                        radius,
-                        pageable
-                )
+        return ResponseEntity.ok(postService.fetchNearbyPosts(latitude,longitude,radius,pageable)
         );
     }
 
-    // Fetch a post
-    @GetMapping("/post/{postId}") public ResponseEntity<PostResponseDTO> fetchPostById(@PathVariable long postId) {
+    @GetMapping("/post/{postId}")
+    public ResponseEntity<PostResponseDTO> fetchPostById(@PathVariable long postId) {
         return ResponseEntity.ok(postService.fetchPostById(postId));
+    }
+
+    @DeleteMapping("/post/{postId}")
+    public ResponseEntity<Void>  deletePost(@PathVariable Long postId, @AuthenticationPrincipal CustomUserPrincipal user){
+        postService.deletePost(postId, user.getUserId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping(value = "/post/{postId}")
+    public ResponseEntity<PostResponseDTO> updatePost(@PathVariable Long postId, @AuthenticationPrincipal CustomUserPrincipal user,@Valid UpdatePostDTO dto){
+        return ResponseEntity.ok(postService.updatePost(dto, postId, user.getUserId()));
     }
 }

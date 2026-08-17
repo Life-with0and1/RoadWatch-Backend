@@ -20,6 +20,7 @@ public class PostMedia {
     private long id;
 
     private String mediaUrl;
+    private String publicId;
 
     @Enumerated(EnumType.STRING)
     private MediaType mediaType;

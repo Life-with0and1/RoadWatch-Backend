@@ -13,5 +13,6 @@ import lombok.Setter;
 public class PostMediaResponseDTO {
 
     private String mediaUrl;
+    private String publicId;
     private MediaType mediaType;
 }

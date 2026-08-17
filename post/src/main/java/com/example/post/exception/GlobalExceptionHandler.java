@@ -26,4 +26,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("status", 404, "error", "Not Found", "message", exception.getMessage())
         );
     }
+
+    @ExceptionHandler(PostCreationException.class)
+    public ResponseEntity<Map<String,Object>> handlePostCreationException(PostCreationException exception){
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("status", 500, "message", exception.getMessage()));
+    }
+
+    @ExceptionHandler(PostNotFoundException.class)
+    public ResponseEntity<Map<String,Object>> handlePostNotFounException(PostNotFoundException exception){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("status", 404, "message", exception.getMessage()));
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<Map<String, Object>> handleForbidden(ForbiddenException exception) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("status", 403,"error", "Forbidden","message", exception.getMessage()));
+    }
 }

@@ -4,12 +4,15 @@ package com.example.post.service;
 import com.example.post.dto.CreatePostDTO;
 import com.example.post.dto.PostMediaResponseDTO;
 import com.example.post.dto.PostResponseDTO;
+import com.example.post.dto.UpdatePostDTO;
 import com.example.post.exception.BadRequestException;
+import com.example.post.exception.ForbiddenException;
+import com.example.post.exception.PostCreationException;
+import com.example.post.exception.PostNotFoundException;
 import com.example.post.model.MediaType;
 import com.example.post.model.Post;
 import com.example.post.model.PostMedia;
 import com.example.post.repository.PostRepository;
-import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,7 +36,7 @@ public class PostService {
         this.mediaValidationService = mediaValidationService;
     }
 
-    public Post createPost(CreatePostDTO postDTO,long userId, List<MultipartFile> mediaFiles) {
+    public PostResponseDTO createPost(CreatePostDTO postDTO,long userId, List<MultipartFile> mediaFiles) {
         mediaValidationService.validate(mediaFiles);
         Post post = new Post();
 
@@ -55,6 +58,7 @@ public class PostService {
 
                 PostMedia postMedia = new PostMedia();
                 postMedia.setMediaUrl(mediaUrl);
+                postMedia.setPublicId(publicId);
                 postMedia.setPost(post);
 
                 if (file.getContentType() != null && file.getContentType().startsWith("video")) {
@@ -65,7 +69,7 @@ public class PostService {
 
                 post.getMedia().add(postMedia);
             }
-            return postRepository.save(post);
+            return toResponseDTO(postRepository.save(post));
         }
         catch (Exception e) {
                 for (String publicId : uploadedPublicIds) {
@@ -75,13 +79,13 @@ public class PostService {
                         deleteException.printStackTrace();
                     }
                 }
-                throw new RuntimeException("Failed to upload media", e);
+                throw new PostCreationException("Unable to create post. Please try again.",e);
             }
     }
 
 
     public Page<PostResponseDTO> fetchNearbyPosts(double latitude, double longitude, double radius, Pageable pageable) {
-        if (radius <= 0 || radius > 20) {
+        if (radius <= 0 || radius > 5) {
             throw new BadRequestException("Radius must be under 5 kilometers");
         }
         return postRepository.findNearbyPosts(latitude, longitude, radius, pageable).map(this::toResponseDTO);
@@ -92,8 +96,9 @@ public class PostService {
         List<PostMediaResponseDTO> media = post.getMedia()
                 .stream()
                 .map(postMedia -> new PostMediaResponseDTO(
-                        postMedia.getMediaUrl(),
-                        postMedia.getMediaType()
+                    postMedia.getMediaUrl(),
+                    postMedia.getPublicId(),
+                    postMedia.getMediaType()
                 ))
                 .toList();
 
@@ -110,7 +115,39 @@ public class PostService {
     }
 
     public PostResponseDTO fetchPostById(long postId) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found with id: " + postId));
         return toResponseDTO(post);
+    }
+
+    public void deletePost(long postId, long userId) {
+        Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found with id: " + postId));
+        if(post.getUserId() != userId) {
+            throw new ForbiddenException("You are not allowed to delete this post");
+        }
+
+        List<PostMedia> postMedia = post.getMedia();
+        for(PostMedia media:postMedia) {
+            try {
+                cloudinaryService.deleteFile(media.getPublicId());
+            } catch (IOException deleteException) {
+                deleteException.printStackTrace();
+            }
+        }
+        postRepository.delete(post);
+    }
+
+    public PostResponseDTO updatePost(UpdatePostDTO dto, Long postId, Long userId){
+        Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found with id: " + postId));
+
+        if(post.getUserId() != userId) {
+            throw new ForbiddenException("You are not allowed to update this post");
+        }
+        
+        post.setCategory(dto.getCategory());
+        post.setDescription(dto.getDescription());
+
+        Post savedPost = postRepository.save(post);
+
+        return toResponseDTO(savedPost);
     }
 }
