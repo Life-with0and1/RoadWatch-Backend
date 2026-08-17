@@ -3,7 +3,6 @@ package com.example.post.controller;
 import com.example.post.dto.CreatePostDTO;
 import com.example.post.dto.PostResponseDTO;
 import com.example.post.dto.UpdatePostDTO;
-import com.example.post.model.Post;
 import com.example.post.security.CustomUserPrincipal;
 import com.example.post.service.PostService;
 import jakarta.validation.Valid;

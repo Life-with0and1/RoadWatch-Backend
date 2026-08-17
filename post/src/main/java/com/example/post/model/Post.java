@@ -28,17 +28,20 @@ public class Post {
     private Double latitude;
     private Double longitude;
 
-    @Column(nullable = false)
     private String description;
 
     @Enumerated(EnumType.STRING)
     private Category category;
 
-//    private ArrayList<String> images;
+
 
     @CreationTimestamp
     private LocalDateTime createdAt;
     private boolean active = true;
+
+    @OneToMany(mappedBy = "post_id", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<PostVote> vote;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
