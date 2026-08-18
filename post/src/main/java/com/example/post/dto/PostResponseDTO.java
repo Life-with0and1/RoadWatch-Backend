@@ -1,6 +1,7 @@
 package com.example.post.dto;
 
 import com.example.post.model.Category;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,7 @@ public class PostResponseDTO {
     private Double latitude;
     private Double longitude;
     private String description;
+    private VoteSummaryDTO voteSummary;
     private Category category;
     private LocalDateTime createdAt;
     private List<PostMediaResponseDTO> media;

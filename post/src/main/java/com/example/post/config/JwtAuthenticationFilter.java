@@ -44,15 +44,12 @@ protected void doFilterInternal(
 
         boolean valid = jwtService.isTokenValid(token);
 
-        System.out.println("TOKEN VALID: " + valid);
-
         if (valid) {
 
             String email = jwtService.extractUsername(token);
             Long userId = jwtService.extractUserId(token);
 
-            CustomUserPrincipal principal =
-                    new CustomUserPrincipal(userId, email);
+            CustomUserPrincipal principal = new CustomUserPrincipal(userId, email);
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(

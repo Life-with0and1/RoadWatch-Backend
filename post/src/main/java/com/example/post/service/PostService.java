@@ -5,6 +5,7 @@ import com.example.post.dto.CreatePostDTO;
 import com.example.post.dto.PostMediaResponseDTO;
 import com.example.post.dto.PostResponseDTO;
 import com.example.post.dto.UpdatePostDTO;
+import com.example.post.dto.VoteSummaryDTO;
 import com.example.post.exception.BadRequestException;
 import com.example.post.exception.ForbiddenException;
 import com.example.post.exception.PostCreationException;
@@ -12,6 +13,7 @@ import com.example.post.exception.PostNotFoundException;
 import com.example.post.model.MediaType;
 import com.example.post.model.Post;
 import com.example.post.model.PostMedia;
+import com.example.post.model.VoteType;
 import com.example.post.repository.PostRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -102,12 +104,25 @@ public class PostService {
                 ))
                 .toList();
 
+        long resolved = post.getVote()
+            .stream()
+            .filter(vote -> vote.getVoteType() == VoteType.RESOLVED)
+            .count();
+
+        long stillHappening = post.getVote()
+            .stream()
+            .filter(vote -> vote.getVoteType() == VoteType.STILL_HAPPENING)
+            .count();
+
+        VoteSummaryDTO summary = new VoteSummaryDTO(resolved, stillHappening);
+
         return new PostResponseDTO(
                 post.getId(),
                 post.getUserId(),
                 post.getLatitude(),
                 post.getLongitude(),
                 post.getDescription(),
+                summary,
                 post.getCategory(),
                 post.getCreatedAt(),
                 media

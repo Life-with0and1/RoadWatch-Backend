@@ -39,7 +39,7 @@ public class Post {
     private LocalDateTime createdAt;
     private boolean active = true;
 
-    @OneToMany(mappedBy = "post_id", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<PostVote> vote;
 
