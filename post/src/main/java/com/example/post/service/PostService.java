@@ -104,12 +104,12 @@ public class PostService {
                 ))
                 .toList();
 
-        long resolved = post.getVote()
+        long resolved = post.getVotes()
             .stream()
             .filter(vote -> vote.getVoteType() == VoteType.RESOLVED)
             .count();
 
-        long stillHappening = post.getVote()
+        long stillHappening = post.getVotes()
             .stream()
             .filter(vote -> vote.getVoteType() == VoteType.STILL_HAPPENING)
             .count();
@@ -135,17 +135,19 @@ public class PostService {
     }
 
     public void deletePost(long postId, long userId) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found with id: " + postId));
-        if(post.getUserId() != userId) {
+        Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException( "Post not found with id: " + postId));
+        if (post.getUserId() != userId) {
             throw new ForbiddenException("You are not allowed to delete this post");
         }
+        deletePostWithMedia(post);
+    }
 
-        List<PostMedia> postMedia = post.getMedia();
-        for(PostMedia media:postMedia) {
+    public void deletePostWithMedia(Post post) {
+        for (PostMedia media : post.getMedia()) {
             try {
                 cloudinaryService.deleteFile(media.getPublicId());
-            } catch (IOException deleteException) {
-                deleteException.printStackTrace();
+            } catch (IOException e) {
+                throw new PostCreationException("Unable to delete post media", e);
             }
         }
         postRepository.delete(post);

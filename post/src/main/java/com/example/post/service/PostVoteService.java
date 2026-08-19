@@ -1,5 +1,7 @@
 package com.example.post.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.example.post.dto.AddVoteDTO;
@@ -7,25 +9,33 @@ import com.example.post.exception.BadRequestException;
 import com.example.post.exception.PostNotFoundException;
 import com.example.post.model.Post;
 import com.example.post.model.PostVote;
+import com.example.post.model.VoteType;
+import com.example.post.projection.VoteScoringProjection;
 import com.example.post.repository.PostRepository;
 import com.example.post.repository.PostVoteRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class PostVoteService {
     
     private final PostRepository postRepository;
     private final PostVoteRepository postVoteRepository;
+    private final GeoLocationService geoLocationService;
+    private final PostService postService;
 
-    public PostVoteService(PostRepository postRepository, PostVoteRepository postVoteRepository){
+    public PostVoteService(PostRepository postRepository, PostVoteRepository postVoteRepository, GeoLocationService geoLocationService, PostService postService){
         this.postRepository = postRepository;
         this.postVoteRepository = postVoteRepository;
+        this.geoLocationService = geoLocationService;
+        this.postService = postService;
     }
 
+    @Transactional
     public void addVote(Long postId, Long userId, AddVoteDTO dto) {
         Post post = postRepository.findById(postId).orElseThrow(() ->  new PostNotFoundException("Post not found with id: " + postId));
 
-        double distance = calculateDistance(post.getLatitude(),post.getLongitude(),dto.getLatitude(),dto.getLongitude());
-
+        double distance = geoLocationService.calculateDistance(post.getLatitude(),post.getLongitude(),dto.getLatitude(),dto.getLongitude());
         if (distance > 1.0) {
             throw new BadRequestException("You must be within 1 km of the post location to vote");
         }
@@ -38,25 +48,41 @@ public class PostVoteService {
         vote.setVoteType(dto.getVoteType());
 
         postVoteRepository.save(vote);
+        evaluatePostResolution(postId);
     }
 
-    private double calculateDistance(double lat1,double lon1,double lat2,double lon2) {
-    double earthRadius = 6371.0;
+    private void evaluatePostResolution(Long postId) {
 
-    double lat1Rad = Math.toRadians(lat1);
-    double lat2Rad = Math.toRadians(lat2);
+        Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found with id: " + postId) );
+        List<VoteScoringProjection> votes = postVoteRepository.findVoteForScoring(postId);
 
-    double lonDifferenceRad = Math.toRadians(lon2 - lon1);
+        double resolvedScore = 0.0;
+        double stillHappeningScore = 0.0;
 
-    double angle = Math.acos(
-                    Math.sin(lat1Rad) * Math.sin(lat2Rad)
-                    + Math.cos(lat1Rad)
-                    * Math.cos(lat2Rad)
-                    * Math.cos(lonDifferenceRad)
-                );
-    return earthRadius * angle;
+        for (VoteScoringProjection vote : votes) {
+
+            double distance = geoLocationService.calculateDistance(post.getLatitude(),post.getLongitude(),vote.getLatitude(),vote.getLongitude());
+
+            double distanceWeight = geoLocationService.calculateDistanceWeight(distance);
+
+            double recencyWeight = geoLocationService.calculateRecencyWeight(vote.getCreatedAt());
+
+            double finalWeight = distanceWeight * recencyWeight;
+
+            if (vote.getVoteType() == VoteType.RESOLVED) {
+                resolvedScore += finalWeight;
+            } else if (vote.getVoteType() == VoteType.STILL_HAPPENING) {
+                stillHappeningScore += finalWeight;
+            }
+        }
+        double totalScore = resolvedScore + stillHappeningScore;
+        if (totalScore >= 3.0) {
+            double resolvedRatio = resolvedScore / totalScore;
+            if (resolvedRatio >= 0.75) {
+                postService.deletePostWithMedia(post);
+            }
+        }
 }
-
 
 
 }

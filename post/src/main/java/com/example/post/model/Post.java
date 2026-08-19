@@ -1,6 +1,5 @@
 package com.example.post.model;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,11 +38,9 @@ public class Post {
     private LocalDateTime createdAt;
     private boolean active = true;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private List<PostVote> vote;
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+   private List<PostVote> votes = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
     private List<PostMedia> media = new ArrayList<>();
 }

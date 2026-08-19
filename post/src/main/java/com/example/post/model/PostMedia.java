@@ -26,7 +26,6 @@ public class PostMedia {
     private MediaType mediaType;
 
     @ManyToOne
-    @JsonBackReference
     @JoinColumn(name = "post_id")
     private Post post;
 }
