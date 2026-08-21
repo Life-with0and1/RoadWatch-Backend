@@ -31,14 +31,19 @@ public class PostService {
     private final PostRepository postRepository;
     private final CloudinaryService cloudinaryService;
     private final MediaValidationService mediaValidationService;
+    private final RateLimiterService rateLimiterService;
 
-    public PostService(PostRepository postRepository, CloudinaryService cloudinaryService, MediaValidationService mediaValidationService){
+    public PostService(PostRepository postRepository, CloudinaryService cloudinaryService, MediaValidationService mediaValidationService, RateLimiterService rateLimiterService){
         this.postRepository = postRepository;
         this.cloudinaryService = cloudinaryService;
         this.mediaValidationService = mediaValidationService;
+        this.rateLimiterService = rateLimiterService;
     }
 
     public PostResponseDTO createPost(CreatePostDTO postDTO,long userId, List<MultipartFile> mediaFiles) {
+        if (!rateLimiterService.tryConsume(userId)) {
+            throw new BadRequestException("Please wait before creating another post.");
+        }
         mediaValidationService.validate(mediaFiles);
         Post post = new Post();
 
@@ -78,7 +83,7 @@ public class PostService {
                     try {
                         cloudinaryService.deleteFile(publicId);
                     } catch (IOException deleteException) {
-                        deleteException.printStackTrace();
+                        throw new PostCreationException("Unable to delete post media", e);
                     }
                 }
                 throw new PostCreationException("Unable to create post. Please try again.",e);

@@ -15,11 +15,14 @@ import com.example.post.projection.VoteScoringProjection;
 public interface PostVoteRepository extends JpaRepository<PostVote,Long> {   
     Optional<PostVote> findByPostIdAndUserId(Long postId, Long userId);
 
-    @Query( """
-        SELECT v.voteType, v.createdAt, v.latitude, v.longitude
+    @Query("""
+    SELECT v.voteType AS voteType,
+           v.createdAt AS createdAt,
+           v.latitude AS latitude,
+           v.longitude AS longitude
         FROM PostVote v
-        WHERE v.post.id == :postId
+        WHERE v.post.id = :postId
         """)
-        List<VoteScoringProjection> findVoteForScoring(@Param("postId") Long postId);
+    List<VoteScoringProjection> findVoteForScoring(@Param("postId") Long postId);
 
 }

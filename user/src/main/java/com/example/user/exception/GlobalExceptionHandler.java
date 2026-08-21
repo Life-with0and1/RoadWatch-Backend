@@ -74,8 +74,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleGenericException(Exception ex) {
 
-        ex.printStackTrace();
-
         Throwable cause = ex.getCause();
         while (cause != null) {
             System.out.println("CAUSE: " + cause);
