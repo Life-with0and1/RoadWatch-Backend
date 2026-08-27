@@ -14,7 +14,19 @@ public class RateLimiterConfig {
 
     @Bean
     public RedisClient redisClient() {
-        return RedisClient.create("redis://localhost:6379");
+
+        String host = System.getenv("REDISHOST");
+        String port = System.getenv("REDISPORT");
+        String password = System.getenv("REDISPASSWORD");
+
+        String redisUrl = String.format(
+                "redis://:%s@%s:%s",
+                password,
+                host,
+                port
+        );
+
+        return RedisClient.create(redisUrl);
     }
 
     @Bean
