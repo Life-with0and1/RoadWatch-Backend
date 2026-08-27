@@ -12,20 +12,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RateLimiterConfig {
 
-    @Bean
+   @Bean
     public RedisClient redisClient() {
-
-        String host = System.getenv("REDISHOST");
-        String port = System.getenv("REDISPORT");
-        String password = System.getenv("REDISPASSWORD");
-
-        String redisUrl = String.format(
-                "redis://:%s@%s:%s",
-                password,
-                host,
-                port
-        );
-
+        String redisUrl = System.getenv("REDIS_URL");
         return RedisClient.create(redisUrl);
     }
 
