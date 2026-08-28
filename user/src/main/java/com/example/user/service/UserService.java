@@ -82,17 +82,36 @@ import java.time.LocalDateTime;
             );
         }
 
+        public PendingRegisterResponse resendOtp(Long id) {
+            Optional<PendingRegisterUser> pendingRegisterUser = pendingRegisterRepository.findById(id);
+
+            if(!pendingRegisterUser.isPresent()){
+                throw new PendingRegistrationNotFoundException("Please try again creating your account.");
+            }
+
+            String otp = OtpGenerator.generateOTP();
+
+            String redisKey = "otp:" + id;
+
+            redisTemplate.opsForValue().set(
+                    redisKey,
+                    otp,
+                    Duration.ofMinutes(15)
+            );
+
+            OtpVerificationEvent event = new OtpVerificationEvent(pendingRegisterUser.get().getEmail(), otp);
+            userEventProducer.publishOtpSent(event);
+
+            return new PendingRegisterResponse(pendingRegisterUser.get().getId(), pendingRegisterUser.get().getEmail(), "A new verification OTP has been sent");
+
+        }
+
+
         @Transactional
         public AuthResponse verifyUser(VerificationDTO request){
-            System.out.println("VERIFY START: " + request.getId());
-
             String redisKey = "otp:" + request.getId();
 
-            System.out.println("BEFORE REDIS GET");
-
             String redisOtp = redisTemplate.opsForValue().get(redisKey);
-
-            System.out.println("AFTER REDIS GET: " + redisOtp);
 
             if(!request.getOtp().equals(redisOtp)){
                 throw new InvalidOtpException("Otp is incorrect. Please try again");

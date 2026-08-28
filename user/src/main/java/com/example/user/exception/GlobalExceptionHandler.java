@@ -76,7 +76,6 @@ public class GlobalExceptionHandler {
 
         Throwable cause = ex.getCause();
         while (cause != null) {
-            System.out.println("CAUSE: " + cause);
             cause = cause.getCause();
         }
 

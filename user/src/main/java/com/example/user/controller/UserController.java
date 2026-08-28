@@ -34,6 +34,12 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @PostMapping("/resend-otp")
+    public ResponseEntity<PendingRegisterResponse> resendOtp(@RequestParam Long id) {
+        PendingRegisterResponse response = userService.resendOtp(id);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginDTO loginDTO) {
         LoginResponse response = userService.login(loginDTO);

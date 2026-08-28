@@ -21,15 +21,7 @@ public class UserEventProducer {
         userRegisterKafkaTemplate.send("user-registered", event);
     }
 
-    public void publishOtpSent(OtpVerificationEvent event) {
-        otpVerificationKafkaTemplate.send("otp-verification", event)
-            .whenComplete((result, ex) -> {
-                if (ex != null) {
-                    ex.printStackTrace();
-                } else {
-                    System.out.println("OTP KAFKA SENT: " +
-                            result.getRecordMetadata());
-                }
-            });
+    public void publishOtpSent(OtpVerificationEvent event){
+        otpVerificationKafkaTemplate.send("otp-verification", event);
     }
 }
