@@ -1,58 +1,57 @@
 package com.example.notification.service;
 
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.stereotype.Service;
-
 import com.example.notification.event.OtpVerificationEvent;
 import com.example.notification.event.UserRegisterEvent;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
+
+import java.util.Map;
 
 @Service
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    private final RestClient restClient = RestClient.builder().baseUrl("https://api.resend.com").build();
 
-    public EmailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
+    private final String apiKey = System.getenv("RESEND_API_KEY");
+
+    public void sendOtpVerificationEmail(OtpVerificationEvent event) {
+
+        Map<String, Object> body = Map.of(
+                "from", "onboarding@resend.dev",
+                "to", new String[]{event.getEmail()},
+                "subject", "Verify your RoadWatch account",
+                "html",
+                "<p>Hello,</p>" +
+                "<p>Your verification OTP is: <strong>" + event.getOtp() + "</strong></p>" +
+                "<p>This OTP is valid for 15 minutes.</p>"
+        );
+
+        restClient.post()
+                .uri("/emails")
+                .header("Authorization", "Bearer " + apiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body)
+                .retrieve()
+                .toBodilessEntity();
     }
 
     public void sendWelcomeEmail(UserRegisterEvent event) {
-        SimpleMailMessage message = new SimpleMailMessage();
 
-        message.setFrom("onboarding@resend.dev");
-        message.setTo(event.getEmail());
-
-        message.setSubject("Welcome to Backend Mastery");
-
-        message.setText("Hi " + event.getName() + ",\n\n" + "Your account has been created successfully.\n\n" + "Welcome!");
-
-        mailSender.send(message);
-    }
-
-    public void sendOtpVerificationEmail(OtpVerificationEvent event) {
-        System.out.println("OTP EMAIL EVENT RECEIVED: " + event.getEmail());
-        SimpleMailMessage message = new SimpleMailMessage();
-
-        message.setFrom("onboarding@resend.dev");
-        message.setTo(event.getEmail());
-
-        message.setSubject("Verify your RoadWatch account");
-
-        message.setText(
-                "Hello,\n\n" +
-                "Thank you for registering with RoadWatch.\n\n" +
-                "Your verification OTP is: " + event.getOtp() + "\n\n" +
-                "This OTP is valid for 15 minutes.\n\n" +
-                "If you did not create this account, you can safely ignore this email.\n\n" +
-                "Regards,\n" +
-                "RoadWatch Team"
+        Map<String, Object> body = Map.of(
+                "from", "onboarding@resend.dev",
+                "to", new String[]{event.getEmail()},
+                "subject", "Welcome to RoadWatch",
+                "html", "<p>Hi " + event.getName() + ",</p>" +
+                        "<p>Your account has been created successfully.</p>"
         );
 
-       System.out.println("BEFORE MAIL SEND");
-
-        mailSender.send(message);
-
-        System.out.println("AFTER MAIL SEND");
+        restClient.post()
+                .uri("/emails")
+                .header("Authorization", "Bearer " + apiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body)
+                .retrieve()
+                .toBodilessEntity();
     }
-
 }
