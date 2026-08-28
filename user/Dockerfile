@@ -3,10 +3,11 @@ FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
 COPY pom.xml .
-RUN mvn dependency:go-offline -B
+COPY src ./src
 
-RUN jar xf target/*.jar BOOT-INF/classes/aiven-kafka-truststore.jks && \
-    cp BOOT-INF/classes/aiven-kafka-truststore.jks /app/aiven-kafka-truststore.jks
+RUN mvn clean package -DskipTests
+
+RUN cp src/main/resources/aiven-kafka-truststore.jks /app/aiven-kafka-truststore.jks
 
 FROM eclipse-temurin:21-jre
 
