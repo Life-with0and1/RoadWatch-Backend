@@ -48,7 +48,11 @@ public class EmailService {
                 "RoadWatch Team"
         );
 
+       System.out.println("BEFORE MAIL SEND");
+
         mailSender.send(message);
+
+        System.out.println("AFTER MAIL SEND");
     }
 
 }
