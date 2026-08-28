@@ -67,9 +67,9 @@ import java.time.LocalDateTime;
 
             userRepository.save(user);
 
-            UserRegisterEvent event = new UserRegisterEvent(user.getId(), user.getEmail(), user.getName());
+            // UserRegisterEvent event = new UserRegisterEvent(user.getId(), user.getEmail(), user.getName());
 
-            userEventProducer.publishUserRegister(event);
+            // userEventProducer.publishUserRegister(event);
 
             String token = jwtService.generateToken( user.getEmail(), user.getId());
 
