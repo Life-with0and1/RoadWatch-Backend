@@ -1,4 +1,4 @@
-package com.example.scheduler;
+package com.example.user.scheduler;
 
 import com.example.user.repository.PendingRegisterRepository;
 import org.springframework.scheduling.annotation.Scheduled;
