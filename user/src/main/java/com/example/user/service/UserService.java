@@ -84,9 +84,15 @@ import java.time.LocalDateTime;
 
         @Transactional
         public AuthResponse verifyUser(VerificationDTO request){
+            System.out.println("VERIFY START: " + request.getId());
+
             String redisKey = "otp:" + request.getId();
 
+            System.out.println("BEFORE REDIS GET");
+
             String redisOtp = redisTemplate.opsForValue().get(redisKey);
+
+            System.out.println("AFTER REDIS GET: " + redisOtp);
 
             if(!request.getOtp().equals(redisOtp)){
                 throw new InvalidOtpException("Otp is incorrect. Please try again");
