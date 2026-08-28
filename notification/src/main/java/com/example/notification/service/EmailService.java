@@ -19,7 +19,7 @@ public class EmailService {
     public void sendWelcomeEmail(UserRegisterEvent event) {
         SimpleMailMessage message = new SimpleMailMessage();
 
-        message.setFrom("ayushkumarit01@gmail.com");
+        message.setFrom("onboarding@resend.dev");
         message.setTo(event.getEmail());
 
         message.setSubject("Welcome to Backend Mastery");
@@ -33,7 +33,7 @@ public class EmailService {
         System.out.println("OTP EMAIL EVENT RECEIVED: " + event.getEmail());
         SimpleMailMessage message = new SimpleMailMessage();
 
-        message.setFrom("ayushkumarit01@gmail.com");
+        message.setFrom("onboarding@resend.dev");
         message.setTo(event.getEmail());
 
         message.setSubject("Verify your RoadWatch account");
