@@ -11,7 +11,7 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic userRegisteredTopic() {
         return TopicBuilder.name("user-registered")
-                .partitions(3)
+                .partitions(2)
                 .replicas(1)
                 .build();
     }
@@ -19,7 +19,7 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic otpVerificationTopic(){
         return TopicBuilder.name("otp-verification")
-                .partitions(3)
+                .partitions(2)
                 .replicas(1)
                 .build();
     }
