@@ -22,11 +22,19 @@ public class UserController {
         this.userService = userService;
     }
 
+    // @PostMapping("/signup")
+    // public ResponseEntity<PendingRegisterResponse> signUp(@Valid @RequestBody UserDTO userDTO) {
+    //     PendingRegisterResponse response = userService.signUp(userDTO);
+    //     return new ResponseEntity<>(response, HttpStatus.CREATED);
+    // }
+
+
     @PostMapping("/signup")
-    public ResponseEntity<PendingRegisterResponse> signUp(@Valid @RequestBody UserDTO userDTO) {
-        PendingRegisterResponse response = userService.signUp(userDTO);
+    public ResponseEntity<AuthResponse> signUp( @Valid @RequestBody UserDTO userDTO) {
+        AuthResponse response = userService.signUp(userDTO);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
+
 
     @PostMapping("/verify")
     public ResponseEntity<AuthResponse> verifyUser(@Valid @RequestBody VerificationDTO request){

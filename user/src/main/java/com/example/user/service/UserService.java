@@ -51,36 +51,60 @@ import java.time.LocalDateTime;
             this.redisTemplate = redisTemplate;
         }
 
- 
-        public PendingRegisterResponse signUp(UserDTO userDto){
+        public AuthResponse signUp(UserDTO userDto) {
+
             Optional<User> existingUser = userRepository.findByEmail(userDto.getEmail());
-            if(existingUser.isPresent()){
+
+            if (existingUser.isPresent()) {
                 throw new EmailAlreadyExistsException("Email already exists");
             }
 
+            User user = new User();
 
-            PendingRegisterUser user = new PendingRegisterUser();
             user.setName(userDto.getName());
             user.setEmail(userDto.getEmail());
             user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-            LocalDateTime currentDateTime = LocalDateTime.now();
-            user.setExpirationTime(currentDateTime.plusMinutes(15));
-            pendingRegisterRepository.save(user);
 
-            String otp = OtpGenerator.generateOTP();
-            String redisKey = "otp:" + user.getId();
-            redisTemplate.opsForValue().set(redisKey, otp, Duration.ofMinutes(15));
+            userRepository.save(user);
 
-            OtpVerificationEvent event = new OtpVerificationEvent(user.getEmail(), otp);
+            UserRegisterEvent event = new UserRegisterEvent(user.getId(), user.getEmail(), user.getName());
 
-            userEventProducer.publishOtpSent(event);
-            
-            return new PendingRegisterResponse(
-                user.getId(),
-                user.getEmail(),
-                "Verification OTP sent"
-            );
+            userEventProducer.publishUserRegister(event);
+
+            String token = jwtService.generateToken( user.getEmail(), user.getId());
+
+            return new AuthResponse(token,user.getId(),user.getName(),user.getEmail());
         }
+ 
+        // public PendingRegisterResponse signUp(UserDTO userDto){
+        //     Optional<User> existingUser = userRepository.findByEmail(userDto.getEmail());
+        //     if(existingUser.isPresent()){
+        //         throw new EmailAlreadyExistsException("Email already exists");
+        //     }
+
+
+        //     PendingRegisterUser user = new PendingRegisterUser();
+        //     user.setName(userDto.getName());
+        //     user.setEmail(userDto.getEmail());
+        //     user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        //     LocalDateTime currentDateTime = LocalDateTime.now();
+        //     user.setExpirationTime(currentDateTime.plusMinutes(15));
+        //     pendingRegisterRepository.save(user);
+
+        //     String otp = OtpGenerator.generateOTP();
+        //     String redisKey = "otp:" + user.getId();
+        //     redisTemplate.opsForValue().set(redisKey, otp, Duration.ofMinutes(15));
+
+        //     OtpVerificationEvent event = new OtpVerificationEvent(user.getEmail(), otp);
+
+        //     userEventProducer.publishOtpSent(event);
+            
+        //     return new PendingRegisterResponse(
+        //         user.getId(),
+        //         user.getEmail(),
+        //         "Verification OTP sent"
+        //     );
+        // }
 
         public PendingRegisterResponse resendOtp(Long id) {
             Optional<PendingRegisterUser> pendingRegisterUser = pendingRegisterRepository.findById(id);
