@@ -30,6 +30,7 @@ public class EmailService {
     }
 
     public void sendOtpVerificationEmail(OtpVerificationEvent event) {
+        System.out.println("OTP EMAIL EVENT RECEIVED: " + event.getEmail());
         SimpleMailMessage message = new SimpleMailMessage();
 
         message.setFrom("ayushkumarit01@gmail.com");
