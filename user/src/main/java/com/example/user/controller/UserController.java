@@ -5,11 +5,13 @@ import com.example.user.dto.LoginDTO;
 import com.example.user.dto.LoginResponse;
 import com.example.user.dto.PendingRegisterResponse;
 import com.example.user.dto.UserDTO;
+import com.example.user.dto.UserProfileDTO;
 import com.example.user.dto.VerificationDTO;
 import com.example.user.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -55,8 +57,10 @@ public class UserController {
     }
 
     @GetMapping("/profile")
-    public String login() {
-        return "Ho";
+    public ResponseEntity<UserProfileDTO> getProfile(Authentication authentication) {
+        String email = authentication.getName();
+        UserProfileDTO profile = userService.getProfileByEmail(email);
+        return ResponseEntity.ok(profile);
     }
 
 }

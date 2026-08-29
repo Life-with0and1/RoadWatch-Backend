@@ -170,7 +170,6 @@ import java.time.LocalDateTime;
                 throw new InvalidCredentialsException("Invalid user credentials");
             }
 
-            String email = user.get().getEmail();
             String hashedPassword = user.get().getPassword();
 
             if (!passwordEncoder.matches(loginDTO.getPassword(), hashedPassword)) {
@@ -181,4 +180,19 @@ import java.time.LocalDateTime;
 
             return new LoginResponse(token);
         }
+        
+        public UserProfileDTO getProfileByEmail(String email) {
+            Optional<User> userOptional = userRepository.findByEmail(email);
+            if (userOptional.isEmpty()) {
+                throw new RuntimeException("User not found");
+            }
+
+            User user = userOptional.get();
+            UserProfileDTO profileDTO = new UserProfileDTO();
+            profileDTO.setName(user.getName());
+            profileDTO.setEmail(user.getEmail());
+
+            return profileDTO;
+        }
+
     }
