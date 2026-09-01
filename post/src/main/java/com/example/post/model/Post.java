@@ -32,7 +32,7 @@ public class Post {
     @Enumerated(EnumType.STRING)
     private Category category;
 
-
+    private String city;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

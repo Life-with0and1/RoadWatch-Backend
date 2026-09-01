@@ -20,12 +20,14 @@ import jakarta.transaction.Transactional;
 public class PostVoteService {
     
     private final PostRepository postRepository;
+    private final DashboardStatsService dashboardStatsService; 
     private final PostVoteRepository postVoteRepository;
     private final GeoLocationService geoLocationService;
     private final PostService postService;
 
-    public PostVoteService(PostRepository postRepository, PostVoteRepository postVoteRepository, GeoLocationService geoLocationService, PostService postService){
+    public PostVoteService(PostRepository postRepository, DashboardStatsService dashboardStatsService, PostVoteRepository postVoteRepository, GeoLocationService geoLocationService, PostService postService){
         this.postRepository = postRepository;
+        this.dashboardStatsService = dashboardStatsService;
         this.postVoteRepository = postVoteRepository;
         this.geoLocationService = geoLocationService;
         this.postService = postService;
@@ -55,6 +57,9 @@ public class PostVoteService {
 
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found with id: " + postId) );
         List<VoteScoringProjection> votes = postVoteRepository.findVoteForScoring(postId);
+        if (votes.size() < 3) {
+            return;
+        }
 
         double resolvedScore = 0.0;
         double stillHappeningScore = 0.0;
@@ -80,9 +85,8 @@ public class PostVoteService {
             double resolvedRatio = resolvedScore / totalScore;
             if (resolvedRatio >= 0.75) {
                 postService.deletePostWithMedia(post);
+                dashboardStatsService.incrementResolvedPosts();
             }
         }
-}
-
-
+    }
 }

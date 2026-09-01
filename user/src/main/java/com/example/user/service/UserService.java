@@ -22,7 +22,6 @@ import org.springframework.data.redis.core.RedisTemplate;
     import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
     import java.util.Optional;
 
     @Service
@@ -195,4 +194,7 @@ import java.time.LocalDateTime;
             return profileDTO;
         }
 
+        public Long getTotalUsers() {
+            return userRepository.count();
+        }
     }

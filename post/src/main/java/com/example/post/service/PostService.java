@@ -29,12 +29,14 @@ import java.util.Set;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final DashboardStatsService dashboardStatsService;
     private final CloudinaryService cloudinaryService;
     private final MediaValidationService mediaValidationService;
     private final RateLimiterService rateLimiterService;
 
-    public PostService(PostRepository postRepository, CloudinaryService cloudinaryService, MediaValidationService mediaValidationService, RateLimiterService rateLimiterService){
+    public PostService(PostRepository postRepository, DashboardStatsService dashboardStatsService, CloudinaryService cloudinaryService, MediaValidationService mediaValidationService, RateLimiterService rateLimiterService){
         this.postRepository = postRepository;
+        this.dashboardStatsService = dashboardStatsService;
         this.cloudinaryService = cloudinaryService;
         this.mediaValidationService = mediaValidationService;
         this.rateLimiterService = rateLimiterService;
@@ -49,6 +51,7 @@ public class PostService {
 
         post.setDescription(postDTO.getDescription());
         post.setCategory(postDTO.getCategory());
+        post.setCity(postDTO.getCity());
         post.setLatitude(postDTO.getLatitude());
         post.setLongitude(postDTO.getLongitude());
         post.setUserId(userId);
@@ -76,6 +79,7 @@ public class PostService {
 
                 post.getMedia().add(postMedia);
             }
+            dashboardStatsService.addCity(postDTO.getCity());
             return toResponseDTO(postRepository.save(post));
         }
         catch (Exception e) {
@@ -171,5 +175,9 @@ public class PostService {
         Post savedPost = postRepository.save(post);
 
         return toResponseDTO(savedPost);
+    }
+
+    public Long getTotalPosts() {
+        return postRepository.count();
     }
 }

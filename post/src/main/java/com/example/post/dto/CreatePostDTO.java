@@ -22,6 +22,9 @@ public class CreatePostDTO {
     @NotNull(message = "Category is required")
     private Category category;
 
+    @NotBlank(message = "City is required")
+    private String city;
+
     @DecimalMin(value = "-90.0", message = "Latitude must be between -90 and 90")
     @DecimalMax(value = "90.0", message = "Latitude must be between -90 and 90")
     @NotNull(message = "Latitude is required")

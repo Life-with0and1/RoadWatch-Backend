@@ -59,4 +59,10 @@ public class PostController {
     public ResponseEntity<PostResponseDTO> updatePost(@PathVariable Long postId, @AuthenticationPrincipal CustomUserPrincipal user,@Valid UpdatePostDTO dto){
         return ResponseEntity.ok(postService.updatePost(dto, postId, user.getUserId()));
     }
+
+    @GetMapping("/stats/posts")
+    public ResponseEntity<Long> getTotalPosts() {
+        Long totalPosts = postService.getTotalPosts();
+        return ResponseEntity.ok(totalPosts);
+    }
 }
