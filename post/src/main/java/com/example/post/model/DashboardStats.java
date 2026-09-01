@@ -19,6 +19,7 @@ public class DashboardStats {
     @Id
     private Long id;
 
+    private long totalPosts;
     private long resolvedPosts;
 
     @ElementCollection

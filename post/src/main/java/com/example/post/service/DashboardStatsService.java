@@ -14,6 +14,22 @@ public class DashboardStatsService {
         this.dashboardStatsRepository = dashboardStatsRepository;
     }
 
+    public void incrementTotalPosts() {
+
+        DashboardStats stats = dashboardStatsRepository.findById(1L)
+                .orElseGet(() -> {
+                    DashboardStats newStats = new DashboardStats();
+                    newStats.setId(1L);
+                    newStats.setTotalPosts(0);
+                    newStats.setResolvedPosts(0);
+                    return newStats;
+                });
+
+        stats.setTotalPosts(stats.getTotalPosts() + 1);
+
+        dashboardStatsRepository.save(stats);
+    }
+
     public void incrementResolvedPosts() {
 
         DashboardStats stats = dashboardStatsRepository.findById(1L)

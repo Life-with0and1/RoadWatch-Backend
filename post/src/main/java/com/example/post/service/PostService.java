@@ -79,8 +79,10 @@ public class PostService {
 
                 post.getMedia().add(postMedia);
             }
+            dashboardStatsService.incrementTotalPosts();
+            Post savedPost = postRepository.save(post);
             dashboardStatsService.addCity(postDTO.getCity());
-            return toResponseDTO(postRepository.save(post));
+            return toResponseDTO(savedPost);
         }
         catch (Exception e) {
                 for (String publicId : uploadedPublicIds) {
