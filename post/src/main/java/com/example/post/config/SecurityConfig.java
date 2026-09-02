@@ -31,6 +31,8 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/health").permitAll()
+                        .requestMatchers("/api/posts/stats/posts").permitAll()
                         .requestMatchers("/api/posts/**").authenticated()
                         .anyRequest().permitAll()
                 )

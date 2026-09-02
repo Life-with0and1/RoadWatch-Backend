@@ -39,7 +39,7 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/user/signup", "/api/user/verify", "/api/user/login").permitAll()
+                        .requestMatchers("/api/user/signup", "/api/user/verify", "/api/user/login", "/api/health", "/api/user/stats/users").permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider(userDetailsService, passwordEncoder()))

@@ -1,9 +1,11 @@
 package com.example.post.controller;
 
 import com.example.post.dto.CreatePostDTO;
+import com.example.post.dto.DashboardStatsResponseDTO;
 import com.example.post.dto.PostResponseDTO;
 import com.example.post.dto.UpdatePostDTO;
 import com.example.post.security.CustomUserPrincipal;
+import com.example.post.service.DashboardStatsService;
 import com.example.post.service.PostService;
 import jakarta.validation.Valid;
 
@@ -26,9 +28,11 @@ import java.util.List;
 public class PostController {
 
     private PostService postService;
+    private DashboardStatsService dashboardStatsService;
 
-    public PostController(PostService postService) {
+    public PostController(PostService postService, DashboardStatsService dashboardStatsService) {
         this.postService = postService;
+        this.dashboardStatsService = dashboardStatsService;
     }
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -55,14 +59,14 @@ public class PostController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping(value = "/post/{postId}")
+    @PutMapping("/post/{postId}")
     public ResponseEntity<PostResponseDTO> updatePost(@PathVariable Long postId, @AuthenticationPrincipal CustomUserPrincipal user,@Valid UpdatePostDTO dto){
         return ResponseEntity.ok(postService.updatePost(dto, postId, user.getUserId()));
     }
 
     @GetMapping("/stats/posts")
-    public ResponseEntity<Long> getTotalPosts() {
-        Long totalPosts = postService.getTotalPosts();
-        return ResponseEntity.ok(totalPosts);
+    public ResponseEntity<DashboardStatsResponseDTO> getTotalPosts() {
+        DashboardStatsResponseDTO stats = dashboardStatsService.getStats();
+        return ResponseEntity.ok(stats);
     }
 }

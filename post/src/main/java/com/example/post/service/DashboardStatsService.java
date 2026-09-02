@@ -2,6 +2,7 @@ package com.example.post.service;
 
 import org.springframework.stereotype.Service;
 
+import com.example.post.dto.DashboardStatsResponseDTO;
 import com.example.post.model.DashboardStats;
 import com.example.post.repository.DashboardStatsRepository;
 
@@ -58,5 +59,23 @@ public class DashboardStatsService {
         stats.getCities().add(city);
 
         dashboardStatsRepository.save(stats);
+    }
+
+    public DashboardStatsResponseDTO getStats() {
+
+        DashboardStats stats = dashboardStatsRepository.findById(1L)
+                .orElseGet(() -> {
+                    DashboardStats newStats = new DashboardStats();
+                    newStats.setId(1L);
+                    newStats.setTotalPosts(0);
+                    newStats.setResolvedPosts(0);
+                    return newStats;
+                });
+
+        return new DashboardStatsResponseDTO(
+                stats.getTotalPosts(),
+                stats.getResolvedPosts(),
+                stats.getCities().size()
+        );
     }
 }
